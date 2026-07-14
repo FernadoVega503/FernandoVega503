@@ -1,4 +1,4 @@
-# FernandoVega503
+# FernandoVega503/README.md
 Mi perfil educativo mi presentación
 <p align="center">
   <img src="https://capsule-render.vercel.app/api?type=waving&color=0:1f4037,100:99f2c8&height=200&section=header&text=FERNANDO%20VEGA&fontSize=50&fontColor=ffffff&desc=FernandoVega503%20|%20linkedin.com/in/tu-usuario&descAlignY=70&descSize=18" />
