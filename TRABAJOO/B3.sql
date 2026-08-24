@@ -1,0 +1,1 @@
+SELECT AVG(precio) AS precio_medio FROM articulos;
