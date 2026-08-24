@@ -1,0 +1,1 @@
+INSERT INTO almacen es(codigo,LUGAR,CAPACIDAD) VALUES (5, 'Santa ana', 2)

@@ -1,0 +1,1 @@
+UPDATE `almacenes` . `CAJAS` SET VALOR=VALOR*0.85

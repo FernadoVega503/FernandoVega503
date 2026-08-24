@@ -1,0 +1,10 @@
+information_schemainformation_schema INSERT INTO `articulos` (`CODIGO`, `NOMBRE`,`PRECIO`,`FABRICANTE`) VALUES (1,'IMPRESOR',25,3), 
+(2,'CAÑON',500,5),
+(3, 'MONITOR',20,3),
+(4, 'ALTAVOCES',70,2),
+(5, 'MAUSE',10,4),
+(6, 'TECLADO',15,5),
+(7, 'LAPTOP',1000,4),
+(8, 'SCANNER',50,4),
+(9, 'TELEFONO',80,6),
+(10, 'COMPUTADORA',70,4);

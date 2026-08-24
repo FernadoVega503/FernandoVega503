@@ -1,0 +1,7 @@
+CREATE TABLE `Fabricantes`(
+`CODIGO` INT(11) NOT NULL AUTO_INCREMENT,
+`NOMBRE` VARCHAR(100) NOT NULL,
+PRIMARY KEY (`CODIGO`)
+)proveedores
+phpmyadminperformance_schemaENGINE=INNODB
+; 
