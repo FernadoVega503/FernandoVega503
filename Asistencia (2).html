@@ -1,0 +1,1182 @@
+|x|<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendee · Control de Asistencia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sidebar-top:#e90000;
+    --sidebar-bottom:#16085e;
+    --brand:linear-gradient(to right, #05bb0e, #006312, #001b06);
+    --brand-dark:#e9e7f3;
+    --ink:#211c3a;
+    --muted:#787494;
+    --line:#aebbff;
+    --bg:#06039b;
+    --card:#adadad;
+    --ok:#12a583;
+    --ok-bg:#296b55;
+    --bad:#e04747;
+    --bad-bg:#fce8ea;
+    --warn:#d98c1f;
+    --warn-bg:#fbf0dd;
+    --radius:2px;
+    --shadow:none;
+    --border:1.5px solid var(--line);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.brand{font-family:'Space Grotesk',sans-serif;}
+  .stu-sub, .stu-card .stu-sub{font-family:'JetBrains Mono',monospace;font-weight:400;letter-spacing:-.2px;}
+
+  .app{
+    display:grid;
+    grid-template-columns:240px 1fr;
+    min-height:100vh;
+  }
+
+  
+  .sidebar{
+    background:linear-gradient(180deg,var(--sidebar-top) 0%, var(--sidebar-bottom) 100%);
+    color:#fff;
+    padding:22px 18px 24px;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+  .sidebar-scroll{
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    flex:1;
+  }
+  .calendar-card{
+    background:rgb(248, 255, 253);
+    border-radius:var(--radius);
+    padding:14px 12px 18px;
+    color:var(--ink);
+    margin-top:18px;
+    border:1.5px solid rgba(255,255,255,.15);
+  }
+  .cal-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-size:13px;
+    font-weight:600;
+    margin-bottom:10px;
+    padding:0 2px;
+  }
+  .cal-head button{
+    background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;
+    width:22px;height:22px;border-radius:6px;
+  }
+  .cal-head button:hover{background:var(--line);}
+  .cal-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:3px;
+    text-align:center;
+    font-size:11.5px;
+  }
+  .cal-grid .dow{
+    color:var(--muted);
+    font-weight:600;
+    padding-bottom:4px;
+  }
+  .cal-grid .day{
+    padding:6px 0;
+    border-radius:8px;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  .cal-grid .day.muted{color:#c7ced9;}
+  .cal-grid .day:hover{background:var(--line);}
+  .cal-grid .day.selected{
+    background:var(--brand);
+    color:#fff;
+    font-weight:700;
+  }
+  .cal-grid .day.today{
+    outline:1.5px solid var(--brand);
+    outline-offset:-1.5px;
+  }
+
+  .add-session{
+    margin-top:16px;
+    background:#043df8;
+    color:#1a1438;
+    border:none;
+    border-radius:8px;
+    padding:12px 16px;
+    font-size:13.5px;
+    font-weight:700;
+    font-family:'Inter',sans-serif;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    transition:transform .15s ease, background .15s ease;
+  }
+  .add-session:hover{background:#e20000;transform:translateY(-1px);}
+
+  .nav{
+    list-style:none;
+    margin:26px 0 0;
+    padding:0;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .nav li a{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:11px 12px;
+    border-radius:10px;
+    color:rgba(255,255,255,.78);
+    text-decoration:none;
+    font-size:14px;
+    font-weight:500;
+    transition:background .15s ease, color .15s ease;
+  }
+  .nav li a svg{flex:0 0 18px;}
+  .nav li a:hover{background:rgba(255,255,255,.08);color:#fff;}
+  .nav li a.active{
+    background:rgba(255,255,255,.16);
+    color:#fff;
+    font-weight:600;
+  }
+
+
+  .main{
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+  }
+  .topbar{
+    background:#fff;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 28px;
+    position:sticky;
+    top:0;
+    z-index:20;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:700;
+    font-size:19px;
+    color:var(--ink);
+  }
+  .brand .dot{
+    width:26px;height:26px;border-radius:7px;
+    background:linear-gradient(135deg,var(--brand),#ff8a5c);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .brand .dot svg{width:15px;height:15px;}
+  .topbar-right{display:flex;align-items:center;gap:14px;}
+  .avatar{
+    width:38px;height:38px;border-radius:50%;
+    background:linear-gradient(135deg,#6d4fe0,#ff8a5c);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:700;font-size:14px;
+    font-family:'Space Grotesk',sans-serif;
+    overflow:hidden;
+  }
+  .menu-toggle{
+    display:none;
+    background:none;border:none;cursor:pointer;padding:6px;
+  }
+
+  .content{
+    padding:22px 28px 40px;
+    flex:1;
+  }
+
+  .toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:18px;
+  }
+  .tabs{
+    display:flex;
+    background:#fff;
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    padding:4px;
+    gap:2px;
+  }
+  .tabs button{
+    border:none;
+    background:transparent;
+    padding:8px 18px;
+    border-radius:6px;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--muted);
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  .tabs button.active{
+    background:var(--brand);
+    color:#fff;
+    box-shadow:none;
+  }
+
+  .toolbar-right{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .icon-btn{
+    width:38px;height:38px;
+    border-radius:8px;
+    border:1.5px solid var(--line);
+    background:#fff;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  .select-pill{
+    display:flex;align-items:center;gap:8px;
+    border:1.5px solid var(--line);
+    background:#fff;
+    border-radius:8px;
+    padding:8px 14px;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--ink);
+    cursor:pointer;
+  }
+
+  .search-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:#fff;
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    padding:10px 14px;
+    max-width:280px;
+    margin-bottom:16px;
+    color:var(--muted);
+    font-size:13.5px;
+  }
+  .search-row input{
+    border:none;outline:none;flex:1;font-size:13.5px;font-family:'Inter',sans-serif;color:var(--ink);
+  }
+
+  
+  .table-card{
+    background:var(--card);
+    border-radius:var(--radius);
+    border:1.5px solid var(--line);
+    overflow:auto;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:760px;
+  }
+  thead th{
+    background:var(--brand);
+    color:#fff;
+    font-size:12.5px;
+    font-weight:600;
+    text-align:center;
+    padding:12px 10px;
+    white-space:nowrap;
+  }
+  thead th:first-child{
+    text-align:left;
+    border-radius:0;
+  }
+  thead .day-name{display:block;font-size:12.5px;font-weight:700;}
+  thead .day-time{
+    display:flex;align-items:center;justify-content:center;gap:5px;
+    font-size:10.5px;font-weight:500;opacity:.9;margin-top:2px;
+  }
+  tbody tr{border-bottom:1px solid var(--line);}
+  tbody tr:last-child{border-bottom:none;}
+  tbody tr:hover{background:#faf9ff;}
+  td{padding:12px 10px;text-align:center;vertical-align:middle;}
+  td.student-cell{
+    text-align:left;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:230px;
+  }
+  .stu-avatar{
+    width:36px;height:36px;border-radius:9px;
+    background:linear-gradient(135deg,#c7bdf5,#ffc9ae);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:12.5px;color:#3a2e78;
+    font-family:'Space Grotesk',sans-serif;
+    flex:0 0 36px;
+  }
+  .stu-name{font-size:13.5px;font-weight:600;color:var(--ink);font-family:'Space Grotesk',sans-serif;}
+  .stu-sub{font-size:11.5px;color:var(--muted);margin-top:1px;}
+
+  .status{
+    width:26px;height:26px;
+    border-radius:50%;
+    display:inline-flex;
+    align-items:center;justify-content:center;
+    cursor:pointer;
+  }
+  .status.ok{background:var(--ok-bg);color:var(--ok);}
+  .status.bad{background:var(--bad-bg);color:var(--bad);}
+  .status.warn{background:var(--warn-bg);color:var(--warn);}
+  .status svg{width:14px;height:14px;}
+
+  /* MOBILE PHONE PREVIEW SECTION */
+  .mobile-preview-wrap{
+    margin-top:34px;
+  }
+  .mobile-preview-wrap h3{
+    font-size:14px;
+    color:var(--muted);
+    font-weight:600;
+    margin-bottom:12px;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width:980px){
+    .app{grid-template-columns:1fr;}
+    .sidebar{
+      position:fixed;
+      inset:0 auto 0 0;
+      width:240px;
+      z-index:40;
+      transform:translateX(-100%);
+      transition:transform .25s ease;
+      box-shadow:0 0 40px rgba(0,0,0,.25);
+    }
+    .sidebar.open{transform:translateX(0);}
+    .menu-toggle{display:flex;}
+    .overlay{
+      display:none;
+      position:fixed;inset:0;background:rgba(10,20,40,.4);z-index:30;
+    }
+    .overlay.show{display:block;}
+  }
+
+  @media (max-width:760px){
+    .content{padding:16px 14px 30px;}
+    .topbar{padding:12px 16px;}
+    .table-card{display:none;}
+    .cards-view{display:flex;flex-direction:column;gap:12px;}
+  }
+  @media (min-width:761px){
+    .cards-view{display:none;}
+  }
+
+  .cards-view{margin-top:4px;}
+  .day-pill-scroll{
+    display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:14px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .day-pill{
+    flex:0 0 auto;
+    background:#fff;border:1.5px solid var(--line);
+    border-radius:8px;
+    padding:8px 14px;
+    font-size:12px;font-weight:600;color:var(--muted);
+    text-align:center;
+    cursor:pointer;
+  }
+  .day-pill .dn{display:block;font-size:12.5px;color:var(--ink);}
+  .day-pill.active{
+    background:var(--brand);border-color:var(--brand);color:#fff;
+  }
+  .day-pill.active .dn{color:#fff;}
+
+  .stu-card{
+    background:#fff;
+    border-radius:var(--radius);
+    border:1.5px solid var(--line);
+    padding:12px 14px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .stu-card .stu-info{flex:1;min-width:0;}
+  .stu-card .stu-name{font-size:14px;}
+  .stu-card .stu-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  
+  ::-webkit-scrollbar{height:8px;width:8px;}
+  ::-webkit-scrollbar-thumb{background:#d7dee7;border-radius:8px;}
+
+  
+  .view{display:none;animation:fadeIn .28s ease;}
+  .view.active{display:block;}
+  @keyframes fadeIn{
+    from{opacity:0;transform:translateY(6px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  .view-header{margin-bottom:20px;}
+  .view-header h2{
+    font-size:21px;font-weight:600;margin:0 0 4px;color:var(--ink);
+  }
+  .view-header p{
+    margin:0;font-size:13.5px;color:var(--muted);
+  }
+
+  
+  .group-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:16px;
+  }
+  .group-card{
+    background:#fff;
+    border:1.5px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px;
+    cursor:pointer;
+    transition:border-color .15s ease, transform .15s ease;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .group-card:hover{border-color:var(--brand);transform:translateY(-3px);}
+  .group-icon{
+    width:44px;height:44px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;
+  }
+  .group-icon svg{width:22px;height:22px;}
+  .group-card h3{
+    margin:0;font-size:16px;font-weight:600;
+  }
+  .group-card .group-sub{
+    font-size:12.5px;color:var(--muted);margin-top:2px;
+  }
+  .group-meta{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-size:12px;
+    color:var(--muted);
+    border-top:1.5px solid var(--line);
+    padding-top:12px;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .group-select-btn{
+    margin-top:2px;
+    background:var(--bg);
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    padding:9px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--brand-dark);
+    cursor:pointer;
+    text-align:center;
+    transition:background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .group-card:hover .group-select-btn{
+    background:var(--brand);color:#fff;border-color:var(--brand);
+  }
+
+
+  .alumnos-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+  }
+  .alumno-card{
+    background:#fff;
+    border:1.5px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .alumno-card .stu-avatar{width:42px;height:42px;font-size:14px;flex:0 0 42px;}
+  .alumno-card .stu-info{flex:1;min-width:0;}
+  .alumno-card .stu-name{display:block;}
+  .rate-badge{
+    font-size:11.5px;font-weight:700;
+    padding:4px 9px;border-radius:20px;
+    flex:0 0 auto;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .rate-good{background:var(--ok-bg);color:var(--ok);}
+  .rate-mid{background:var(--warn-bg);color:var(--warn);}
+  .rate-low{background:var(--bad-bg);color:var(--bad);}
+
+  
+  .report-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:16px;
+    margin-bottom:18px;
+  }
+  .report-card{
+    background:#fff;
+    border:1.5px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px;
+  }
+  .report-card .r-label{
+    font-size:12.5px;color:var(--muted);font-weight:600;
+  }
+  .report-card .r-value{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:30px;font-weight:700;color:var(--ink);margin-top:6px;
+  }
+  .report-card .r-value span{font-size:16px;color:var(--muted);font-weight:500;}
+  .report-list{
+    background:#fff;
+    border:1.5px solid var(--line);
+    border-radius:var(--radius);
+    padding:6px 0;
+  }
+  .report-row{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 18px;
+    border-bottom:1.5px solid var(--line);
+    font-size:13.5px;
+  }
+  .report-row:last-child{border-bottom:none;}
+  .report-row .stu-name{font-size:13.5px;}
+  .bar-track{
+    flex:1;height:6px;background:var(--bg);border-radius:6px;margin:0 16px;overflow:hidden;
+  }
+  .bar-fill{height:100%;background:var(--brand);border-radius:6px;}
+
+  
+  .profile-card{
+    background:#fff;
+    border:1.5px solid var(--line);
+    border-radius:var(--radius);
+    padding:22px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:18px;
+  }
+  .profile-avatar{
+    width:64px;height:64px;border-radius:14px;
+    background:linear-gradient(135deg,var(--brand),#ff8a5c);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:22px;font-weight:700;
+    font-family:'Space Grotesk',sans-serif;
+    flex:0 0 64px;
+  }
+  .profile-info h3{margin:0 0 3px;font-size:17px;}
+  .profile-info .role{
+    font-size:12.5px;color:var(--brand-dark);font-weight:600;
+    background:var(--ok-bg);display:inline-block;padding:2px 9px;border-radius:20px;
+    margin-bottom:4px;
+  }
+  .profile-info .mail{font-size:12.5px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+  .edit-profile-btn{
+    margin-left:auto;
+    background:var(--bg);border:1.5px solid var(--line);
+    border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;
+    color:var(--ink);cursor:pointer;flex:0 0 auto;
+  }
+  .edit-profile-btn:hover{border-color:var(--brand);color:var(--brand-dark);}
+
+  .settings-list{
+    background:#fff;
+    border:1.5px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+    margin-bottom:18px;
+  }
+  .settings-item{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:15px 18px;
+    border-bottom:1.5px solid var(--line);
+  }
+  .settings-item:last-child{border-bottom:none;}
+  .settings-item .s-left{display:flex;align-items:center;gap:12px;}
+  .settings-item .s-icon{
+    width:34px;height:34px;border-radius:8px;
+    background:var(--bg);color:var(--brand-dark);
+    display:flex;align-items:center;justify-content:center;flex:0 0 34px;
+  }
+  .settings-item .s-icon svg{width:16px;height:16px;}
+  .settings-item .s-title{font-size:13.5px;font-weight:600;color:var(--ink);}
+  .settings-item .s-sub{font-size:12px;color:var(--muted);margin-top:1px;}
+  .settings-item .s-value{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+
+  .switch{
+    position:relative;width:38px;height:22px;flex:0 0 38px;
+  }
+  .switch input{opacity:0;width:0;height:0;}
+  .switch .track{
+    position:absolute;inset:0;background:var(--line);border-radius:22px;
+    cursor:pointer;transition:background .15s ease;
+  }
+  .switch .track::before{
+    content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;
+    background:#fff;border-radius:50%;transition:transform .15s ease;
+    box-shadow:0 1px 3px rgba(0,0,0,.2);
+  }
+  .switch input:checked + .track{background:var(--brand);}
+  .switch input:checked + .track::before{transform:translateX(16px);}
+
+  .logout-btn{
+    width:100%;
+    background:var(--bad-bg);
+    color:var(--bad);
+    border:1.5px solid transparent;
+    border-radius:var(--radius);
+    padding:13px;
+    font-size:13.5px;
+    font-weight:700;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  .logout-btn:hover{border-color:var(--bad);}
+
+  @media (max-width:900px){
+    .group-grid{grid-template-columns:1fr;}
+    .alumnos-grid{grid-template-columns:1fr;}
+    .report-grid{grid-template-columns:1fr;}
+    .profile-card{flex-wrap:wrap;}
+    .edit-profile-btn{margin-left:0;}
+  }
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-scroll">
+      <div class="calendar-card">
+        <div class="cal-head">
+          <button id="prevMonth">&#8249;</button>
+          <span id="monthLabel">Diciembre 2017</span>
+          <button id="nextMonth">&#8250;</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+
+      <button class="add-session">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Añadir 
+      </button>
+
+      <ul class="nav">
+        <li><a href="#" data-view="grupos"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="8" r="3"/><path d="M2 20c0-3 3-5 7-5s7 2 7 5"/><path d="M13 15c4 0 7 2 7 5"/></svg>Secciones</a></li>
+        <li><a href="#" data-view="alumnos"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>Alumnos</a></li>
+        <li><a href="#" data-view="asistencia" class="active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="14" y2="18"/></svg>Asistencia</a></li>
+        <li><a href="#" data-view="informes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>Informes</a></li>
+        <li><a href="#" data-view="ajustes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Ajustes</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1b2a3d" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="brand">
+          <span class="dot">
+            <img src="insignia" width="80px" height="80px" style="padding: 3px;" alt="">
+          </span    >
+                  <h2 style="color: #0d3600;
+                  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+                  padding: 8px;"> ASISTENCIA INBEFIC</h2>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="avatar" id="userAvatar"><img src="usuario.png"  height="50px  " width="50px" alt=""></div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ===== Secciones ===== -->
+      <section class="view" id="view-grupos" data-view="grupos">
+        <div class="view-header">
+          <h2>Tus Secciones</h2>
+          <p>Elige una sección para ver su asistencia, alumnos y horario.</p>
+        </div>
+        <div class="group-grid" id="groupGrid"></div>
+      </section>
+
+      <!-- ===== VISTA: ALUMNOS ===== -->
+      <section class="view" id="view-alumnos" data-view="alumnos">
+        <div class="view-header">
+          <h2>Alumnos</h2>
+          <p>Todos los estudiantes inscritos, con su asistencia general.</p>
+        </div>
+        <div class="search-row" style="max-width:320px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="alumnosSearch" placeholder="Buscar alumno">
+        </div>
+        <div class="alumnos-grid" id="alumnosGrid"></div>
+      </section>
+
+      <!-- ===== VISTA: ASISTENCIA ===== -->
+      <section class="view active" id="view-asistencia" data-view="asistencia">
+        <div class="toolbar">
+          <div class="tabs">
+            <button class="active" data-view="semana">Semana</button>
+            <button data-view="mes">Mes</button>
+            <button data-view="ano">Año</button>
+          </div>
+          <div class="toolbar-right">
+            <button class="icon-btn" title="Vista de lista">
+              ✔
+            </button>
+            <div class="select-pill" id="subjectPill">
+              3A SOFTWARE
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-row">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="searchInput" placeholder="Buscar alumno">
+        </div>
+
+        <!-- TABLE (desktop) -->
+        <div class="table-card">
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                <th><span class="day-name">LUN 2</span><span class="day-time">7:00 - 15:00 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg></span></th>
+                <th><span class="day-name">MAR 3</span><span class="day-time">7:00 - 13:00 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg></span></th>
+                <th><span class="day-name">MIÉ 4</span><span class="day-time">12:00 - 13:00 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg></span></th>
+                <th><span class="day-name">JUE 5</span><span class="day-time">7:00 - 13:00 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg></span></th>
+                <th><span class="day-name">VIE 6</span><span class="day-time">7:00 - 13:00 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg></span></th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- CARDS (mobile) -->
+        <div class="cards-view">
+          <div class="day-pill-scroll" id="dayPillScroll"></div>
+          <div id="cardsList" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+      </section>
+
+      <!-- ===== VISTA: INFORMES ===== -->
+      <section class="view" id="view-informes" data-view="informes">
+        <div class="view-header">
+          <h2>Informes</h2>
+          <p>Resumen de asistencia de la semana actual.</p>
+        </div>
+        <div class="report-grid" id="reportStats"></div>
+        <div class="report-list" id="reportList"></div>
+      </section>
+
+      <!-- ===== VISTA: AJUSTES ===== -->
+      <section class="view" id="view-ajustes" data-view="ajustes">
+        <div class="view-header">
+          <h2>Ajustes</h2>
+          <p>Tu cuenta de profesor y preferencias de la aplicación.</p>
+        </div>
+
+        <div class="profile-card">
+          <div class="profile-avatar">JC</div>
+          <div class="profile-info">
+            <h3>Juan Carlos Martínez</h3>
+            <span class="role">Profesor · Desarrollo de software.8i8                                v99</span>
+            <div class="mail">jcmartinez@centroeducativo.com</div>
+          </div>
+          <button class="edit-profile-btn">Editar perfil</button>
+        </div>
+
+        <div class="settings-list">
+          <div class="settings-item">
+            <div class="s-left">
+              <div class="s-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>
+              <div>
+                <div class="s-title">Notificaciones</div>
+                <div class="s-sub">Avisos de sesiones y ausencias</div>
+              </div>
+            </div>
+            <label class="switch"><input type="checkbox" checked><span class="track"></span></label>
+          </div>
+          <div class="settings-item">
+            <div class="s-left">
+              <div class="s-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></div>
+              <div>
+                <div class="s-title">Modo oscuro</div>
+                <div class="s-sub">Reduce el brillo de la interfaz</div>
+              </div>
+            </div>
+            <label class="switch"><input type="checkbox"><span class="track"></span></label>
+          </div>
+          <div class="settings-item">
+            <div class="s-left">
+              <div class="s-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l7 5 7-5"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg></div>
+              <div>
+                <div class="s-title">Correo de contacto</div>
+                <div class="s-sub">jcmartinez@centroeducativo.com</div>
+              </div>
+            </div>
+            <div class="s-value">Cambiar
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>
+            </div>
+          </div>
+          <div class="settings-item">
+            <div class="s-left">
+              <div class="s-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 17v.01M12 7v6"/></svg></div>
+              <div>
+                <div class="s-title">Idioma</div>
+                <div class="s-sub">Idioma de la aplicación</div>
+              </div>
+            </div>
+            <div class="s-value">Español
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>
+            </div>
+          </div>
+          <div class="settings-item">
+            <div class="s-left">
+              <div class="s-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+              <div>
+                <div class="s-title">Privacidad y datos</div>
+                <div class="s-sub">Gestiona tu información</div>
+              </div>
+            </div>
+            <div class="s-value">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <button class="logout-btn" id="logoutBtn">Cerrar sesión</button>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- Data ---------- */
+const days = ["LUN 2","MAR 3","MIÉ 4","JUE 5","VIE 6"];
+const students = [
+  { name:"Kevin Orlando Benito Martinez", code:"44578934-R", email:"Benito Martinez@gmail.com", status:["ok","ok","ok","ok","ok"] },
+  { name:"Natali Astrid Vega Martinez", code:"44578934-R", email:"VegaMarinez@gmail.com", status:["ok","ok","ok","ok","ok"] },
+  { name:"María José Fernández López", code:"44678934-R", email:"jgarcia@gmail.com", status:["ok","ok","ok","ok","ok"] },
+  { name:"Alberto Martín López", code:"44678934-R", email:"jgarcia@gmail.com", status:["bad","ok","warn","bad","ok"] },
+  { name:"Eduardo Gallardo Gil", code:"44678934-R", email:"jgarcia@gmail.com", status:["bad","ok","ok","ok","ok"] },
+  { name:"Raquel Cambralla García", code:"44678934-R", email:"jgarcia@gmail.com", status:["ok","ok","ok","ok","ok"] },
+  { name:"Lorena Fernández Sánchez", code:"44678934-R", email:"jgarcia@gmail.com", status:["ok","ok","warn","ok","ok"] },
+  { name:"Verónica Casanova Moreno", code:"44678934-R", email:"jgarcia@gmail.com", status:["bad","ok","ok","ok","ok"] },
+  { name:"Raúl Piquer Peris", code:"44678934-R", email:"jgarcia@gmail.com", status:["ok","ok","ok","warn","ok"] },
+  { name:"Ernesto Roca Vento", code:"44678934-R", email:"jgarcia@gmail.com", status:["ok","ok","ok","ok","ok"] },
+];
+
+const groups = [
+  {
+    name:"Software técnico", section:"A", schedule:"Lun - Vie · 12:00-13:00",
+    count:10, color:"#6d4fe0",
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 20l4-1 10-10-3-3L5 16l-1 4z"/></svg>'
+  },
+  {
+    name:"Contador", section:" B", schedule:"Mar - Jue · 16:00-17:30",
+    count:8, color:"#ff8a5c",
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a4 4 0 0 0 0 8 4 4 0 0 1 0 8"/></svg>'
+  },
+  {
+    name:"Sgundo ", section:"B", schedule:"Sáb · 10:00-12:00",
+    count:6, color:"#12a583",
+    icon:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2v20M6 6c0 3 2.5 5 6 5s6-2 6-5"/><path d="M8 22h8"/></svg>'
+  },
+];
+
+const icons = {
+  ok:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>',
+  bad: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>',
+  warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5"/><circle cx="12" cy="16.2" r="0.4" fill="currentColor"/><path d="M10.3 4.3 2.6 18a1.5 1.5 0 0 0 1.3 2.2h16.2A1.5 1.5 0 0 0 21.4 18L13.7 4.3a1.6 1.6 0 0 0-2.8 0Z"/></svg>'
+};
+
+function initials(name){
+  const parts = name.trim().split(" ");
+  return (parts[0][0] + (parts[1] ? parts[1][0] : "")).toUpperCase();
+}
+
+/* ---------- Render table (desktop) ---------- */
+function renderTable(list){
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = list.map(s => `
+    <tr>
+      <td class="student-cell">
+        <div class="stu-avatar">${initials(s.name)}</div>
+        <div>
+          <div class="stu-name">${s.name}</div>
+          <div class="stu-sub">${s.code} · ${s.email}</div>
+        </div>
+      </td>
+      ${s.status.map(st => `<td><span class="status ${st}">${icons[st]}</span></td>`).join('')}
+    </tr>
+  `).join('');
+}
+
+/* ---------- Render mobile day pills + cards ---------- */
+let activeDay = 0;
+function renderDayPills(){
+  const wrap = document.getElementById('dayPillScroll');
+  wrap.innerHTML = days.map((d,i) => {
+    const [dn, num] = d.split(" ");
+    return `<div class="day-pill ${i===activeDay?'active':''}" data-i="${i}">
+      <span class="dn">${num}</span>${dn}
+    </div>`;
+  }).join('');
+  wrap.querySelectorAll('.day-pill').forEach(p=>{
+    p.addEventListener('click', ()=>{
+      activeDay = parseInt(p.dataset.i);
+      renderDayPills();
+      renderCards(currentFiltered());
+    });
+  });
+}
+
+function renderCards(list){
+  const wrap = document.getElementById('cardsList');
+  wrap.innerHTML = list.map(s => `
+    <div class="stu-card">
+      <div class="stu-avatar">${initials(s.name)}</div>
+      <div class="stu-info">
+        <div class="stu-name">${s.name}</div>
+        <div class="stu-sub">${s.code} · ${s.email}</div>
+      </div>
+      <span class="status ${s.status[activeDay]}">${icons[s.status[activeDay]]}</span>
+    </div>
+  `).join('');
+}
+
+function currentFiltered(){
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  if(!q) return students;
+  return students.filter(s => s.name.toLowerCase().includes(q));
+}
+
+function renderAll(){
+  const list = currentFiltered();
+  renderTable(list);
+  renderCards(list);
+}
+
+document.getElementById('searchInput').addEventListener('input', renderAll);
+
+/* ---------- Tabs (Semana/Mes/Año) ---------- */
+document.querySelectorAll('#view-asistencia .tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#view-asistencia .tabs button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+/* ---------- Vista: Grupos ---------- */
+function renderGroups(){
+  const wrap = document.getElementById('groupGrid');
+  wrap.innerHTML = groups.map((g,i) => `
+    <div class="group-card" data-i="${i}">
+      <div class="group-icon" style="background:${g.color}">${g.icon}</div>
+      <div>
+        <h3>${g.name}</h3>
+        <div class="group-sub">${g.section}</div>
+      </div>
+      <div class="group-meta">
+        <span>${g.schedule}</span>
+        <span>${g.count} alumnos</span>
+      </div>
+      <div class="group-select-btn">Ver asistencia</div>
+    </div>
+  `).join('');
+  wrap.querySelectorAll('.group-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      const g = groups[parseInt(card.dataset.i)];
+      document.getElementById('subjectPill').innerHTML =
+        `${g.name} <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>`;
+      switchView('asistencia');
+    });
+  });
+}
+
+/* ---------- Vista: Alumnos ---------- */
+function attendanceRate(s){
+  const okCount = s.status.filter(st => st === 'ok').length;
+  return Math.round((okCount / s.status.length) * 100);
+}
+function renderAlumnosView(){
+  const q = document.getElementById('alumnosSearch').value.trim().toLowerCase();
+  const list = !q ? students : students.filter(s => s.name.toLowerCase().includes(q));
+  const wrap = document.getElementById('alumnosGrid');
+  wrap.innerHTML = list.map(s => {
+    const rate = attendanceRate(s);
+    const rateClass = rate >= 80 ? 'rate-good' : rate >= 50 ? 'rate-mid' : 'rate-low';
+    return `
+    <div class="alumno-card">
+      <div class="stu-avatar">${initials(s.name)}</div>
+      <div class="stu-info">
+        <span class="stu-name">${s.name}</span>
+        <div class="stu-sub">${s.code} · ${s.email}</div>
+      </div>
+      <span class="rate-badge ${rateClass}">${rate}%</span>
+    </div>`;
+  }).join('');
+}
+document.getElementById('alumnosSearch').addEventListener('input', renderAlumnosView);
+
+/* ---------- Vista: Informes ---------- */
+function renderInformes(){
+  const rates = students.map(attendanceRate);
+  const avg = Math.round(rates.reduce((a,b)=>a+b,0) / rates.length);
+  const perfect = rates.filter(r => r === 100).length;
+  const atRisk = rates.filter(r => r < 60).length;
+
+  document.getElementById('reportStats').innerHTML = `
+    <div class="report-card">
+      <div class="r-label">Asistencia media</div>
+      <div class="r-value">${avg}<span>%</span></div>
+    </div>
+    <div class="report-card">
+      <div class="r-label">Asistencia perfecta</div>
+      <div class="r-value">${perfect}<span>/ ${students.length} alumnos</span></div>
+    </div>
+    <div class="report-card">
+      <div class="r-label">En riesgo (&lt;60%)</div>
+      <div class="r-value">${atRisk}<span>alumnos</span></div>
+    </div>
+  `;
+
+  const sorted = students.map((s,i)=>({s, rate:rates[i]})).sort((a,b)=> a.rate - b.rate);
+  document.getElementById('reportList').innerHTML = sorted.map(({s,rate}) => `
+    <div class="report-row">
+      <span class="stu-name">${s.name}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${rate}%"></div></div>
+      <span>${rate}%</span>
+    </div>
+  `).join('');
+}
+
+/* ---------- View switcher ---------- */
+function switchView(name){
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const target = document.getElementById('view-' + name);
+  if(target) target.classList.add('active');
+
+  document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+  const navLink = document.querySelector(`.nav a[data-view="${name}"]`);
+  if(navLink) navLink.classList.add('active');
+
+  if(name === 'grupos') renderGroups();
+  if(name === 'alumnos') renderAlumnosView();
+  if(name === 'informes') renderInformes();
+
+  sidebar.classList.remove('open');
+  overlay.classList.remove('show');
+  document.querySelector('.content').scrollTo?.(0,0);
+  window.scrollTo(0,0);
+}
+
+/* ---------- Sidebar mobile toggle ---------- */
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('overlay');
+document.getElementById('menuToggle').addEventListener('click', ()=>{
+  sidebar.classList.add('open');
+  overlay.classList.add('show');
+});
+overlay.addEventListener('click', ()=>{
+  sidebar.classList.remove('open');
+  overlay.classList.remove('show');
+});
+document.querySelectorAll('.nav a').forEach(a=>{
+  a.addEventListener('click', (e)=>{
+    e.preventDefault();
+    switchView(a.dataset.view);
+  });
+});
+
+document.getElementById('logoutBtn').addEventListener('click', ()=>{
+  alert('Sesión cerrada (demo).');
+});
+
+/* ---------- Calendar ---------- */
+const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+let calDate = new Date(2017, 11, 1); // Diciembre 2017
+let selectedDate = 5;
+
+function renderCalendar(){
+  document.getElementById('monthLabel').textContent = `${monthNames[calDate.getMonth()]} ${calDate.getFullYear()}`;
+  const grid = document.getElementById('calGrid');
+  const dows = ["L","M","X","J","V","S","D"];
+  let html = dows.map(d=>`<div class="dow">${d}</div>`).join('');
+
+  const firstDay = new Date(calDate.getFullYear(), calDate.getMonth(), 1);
+  let startOffset = (firstDay.getDay() + 6) % 7; // Monday=0
+  const daysInMonth = new Date(calDate.getFullYear(), calDate.getMonth()+1, 0).getDate();
+  const prevMonthDays = new Date(calDate.getFullYear(), calDate.getMonth(), 0).getDate();
+
+  for(let i=startOffset; i>0; i--){
+    html += `<div class="day muted">${prevMonthDays - i + 1}</div>`;
+  }
+  for(let d=1; d<=daysInMonth; d++){
+    let cls = "day";
+    if(d === selectedDate) cls += " selected";
+    html += `<div class="${cls}" data-d="${d}">${d}</div>`;
+  }
+  const totalCells = startOffset + daysInMonth;
+  const remain = (7 - (totalCells % 7)) % 7;
+  for(let d=1; d<=remain; d++){
+    html += `<div class="day muted">${d}</div>`;
+  }
+  grid.innerHTML = html;
+
+  grid.querySelectorAll('.day:not(.muted)').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      selectedDate = parseInt(el.dataset.d);
+      renderCalendar();
+    });
+  });
+}
+
+document.getElementById('prevMonth').addEventListener('click', ()=>{
+  calDate.setMonth(calDate.getMonth()-1);
+  renderCalendar();
+});
+document.getElementById('nextMonth').addEventListener('click', ()=>{
+  calDate.setMonth(calDate.getMonth()+1);
+  renderCalendar();
+});
+
+/* ---------- Init ---------- */
+renderCalendar();
+renderDayPills();
+renderAll();
+</script>
+</body>
+</html>
