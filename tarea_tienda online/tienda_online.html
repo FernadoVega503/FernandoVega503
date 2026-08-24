@@ -1,0 +1,295 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Productos</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+    <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script>
+    <style>
+    
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #4682b4; /* Azul acero*/
+        }
+
+        header {
+            background-color: #A6FFFF;
+            color: black;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .menu {
+            width: 20%;
+            float: left;
+            padding: 20px;
+            background-color: #eee;
+        }
+
+        .menu ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .menu ul li {
+            padding: 10px;
+            background-color: #ddd;
+            margin-bottom: 5px;
+        }
+
+        .menu ul li:hover {
+            background-color: #ccc;
+            cursor: pointer;
+        }
+
+        .content {
+            float: left;
+            padding: 20px;
+        }
+
+        .product {
+            width: 30%;
+            display: inline-block;
+            margin: 10px;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .product img {
+            width: 100px;
+            height: 100px;
+        }
+
+        .cart {
+            margin-top: 20px;
+            float: right;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+        }
+
+        .add-to-cart {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .add-to-cart:hover {
+            background-color: #218838;
+        }
+
+        footer {
+            clear: both;
+            padding: 20px;
+            text-align: center;
+            background-color: #333;
+            color: white;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>LOGO EMPRESA</h1>
+        <center><img src="img/logo.jpeg" height="200" width="200"></center>
+        <div class="cart">
+            <h3>Carrito de Compras</h3>
+            <p id="cart-items">Productos en el carrito: 0</p>
+        </div>
+    </header>
+
+    <div class="menu">
+        <ul>
+            <li>Item 1</li>
+            <li>Item 2</li>
+            <li>Item 3</li>
+            <li>Item 4</li>
+            <li>Item 5</li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <h2>Item 1 Productos</h2>
+        <h3>"LABIALES"</h3>
+        <p>Un labial es un producto cosmético utilizado principalmente en los labios para agregar color y brillo, así como para proteger e hidratar los labios</p>
+        <div class="producto">
+            <img src="img/labiales.jpg" alt="Producto 1" width="270" height="200">
+            <p>Producto 1</p>
+            <p>Precio: $ 4.50</p>
+            <p>
+        <div class="cantidad-container"></div>
+            <button class="menos">-</button>
+            <input type="number" class="cantidad"
+            value="1" min="1">
+            <button class="mas">+</button>
+        </p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+        <div class="product">
+            <img src="img/labiales1.jpg" alt="Producto 2" width="270" height="200">
+            <p>Producto 2</p>
+            <p>Precio: $ 4.00</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+         <div class="product">
+            <img src="img/pinta labios2.jpg" alt="Producto 3" width="270" height="200">
+            <p>Producto 3</p>
+            <p>Precio: $ 7.00</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+        <div class="product">
+            <img src="img/labial.jpg" alt="Producto 4" width="270" height="200">
+            <p>Producto 4</p>
+            <p>Precio: $ 5.25</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+
+         <div class="content">
+        <h2>Item 2 Productos</h2>
+        <h3>"BROCHAS"</h3>
+        <p>Las brochas de maquillaje son utensilios usados para aplicar con facilidad los productos de maquillajes obteniendo mejores resultados sobre la piel.</p>
+        <div class="product">
+            <img src="img/brochas.jpg" alt="Producto 1">
+            <p>Producto 1</p>
+            <p>Precio: $ 7.00</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+        <div class="product">
+            <img src="img/brochas de maquillaje.jpg" alt="Producto 2">
+            <p>Producto 2</p>
+            <p>Precio: $ 6.75</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+         <div class="product">
+            <img src="img/brochas2.jpg" alt="Producto 3">
+            <p>Producto 3</p>
+            <p>Precio: $ 6.25</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+        <div class="product">
+            <img src="img/brochas1.jpg" alt="Producto 4" width="250" height="200">
+            <p>Producto 4</p>
+            <p>Precio: $ 7.00</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+
+         <div class="content">
+        <h2>Item 3 Productos</h2>
+        <h3>"POLVOS"</h3>
+        <p> Los polvos de maquillaje son productos de belleza que se utilizan para matificar la piel y establecer el maquillaje en su lugar.</p>
+        <div class="product">
+            <img src="img/polvo.jpg" alt="Producto 1" width="260" height="200">
+            <p>Producto 1</p>
+            <p>Precio: $ 11.25</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+        <div class="product">
+            <img src="img/polvo de maquillaje1.jpg" alt="Producto 2" width="260" height="200">
+            <p>Producto 2</p>
+            <p>Precio: $ 8.00</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+         <div class="product">
+            <img src="img/polvo4.jpg" alt="Producto 3" width="260" height="200">
+            <p>Producto 3</p>
+            <p>Precio: $ 7.75</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+        <div class="product">
+            <img src="img/polvo de maquillaje3.jpg" alt="Producto 4" width="260" height="200">
+            <p>Producto 4</p>
+            <p>Precio: $ 9.85</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+
+        <div class="content">
+        <h2>Item 4 Productos</h2>
+        <h3>"COSMÉTICOS PARA EL CABELLO"</h3>
+        <p>En un cosmético que hace más fácil el peinado y evita enredos y roturas del cabello. Además, debe tratarse de un producto adecuado para el tipo de cabello en específico y contar con una buena calidad.</p>
+        <div class="product">
+            <img src="img/accesorio.jpg" alt="Producto 1" width="260" height="190">
+            <p>Producto 1</p>
+            <p>Precio: $ 20.25</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+        <div class="product">
+            <img src="img/cosmeticos2.jpg" alt="Producto 2" width="260" height="190">
+            <p>Producto 2</p>
+            <p>Precio: $ 17.75</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+         <div class="product">
+            <img src="img/cosmeticos.jpg" alt="Producto 3" width="260" height="190">
+            <p>Producto 3</p>
+            <p>Precio: $ 25.00</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+        <div class="product">
+            <img src="img/cosmeticos1.jpg" alt="Producto 4" width="260" height="190">
+            <p>Producto 4</p>
+            <p>Precio: $ 21.50</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+
+        <div class="content">
+        <h2>Item 5 Productos</h2>
+        <h3>"MAQUILLAJES PARA LOS OJOS"</h3>
+        <p>El maquillaje para los ojos marrones requiere tonos verdes, azules y metálicos.
+        Los ojos verdes se acentúan mejor con colores cobrizos, morados, rojos, marrones y bronce.
+        Las personas de ojos azules deben optar por las sombras de color melocotón, beige, dorado, marrón, gris oscuro y verde oscuro.</p>
+        <div class="product">
+            <img src="img/maquillaje.jpg" alt="Producto 1" width="280" height="200">
+            <p>Producto 1</p>
+            <p>Precio: $ 6.35</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+        <div class="product">
+            <img src="img/sombras para los ojos2.jpg" alt="Producto 2" width="280" height="200">
+            <p>Producto 2</p>
+            <p>Precio: $ 12.50</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+         <div class="product">
+            <img src="img/sombras.jpg" alt="Producto 3" width="280" height="200">
+            <p>Producto 3</p>
+            <p>Precio: $ 16.00</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+        <div class="product">
+            <img src="img/sombras para los ojos1.jpg" alt="Producto 4" width="280" height="200">
+            <p>Producto 4</p>
+            <p>Precio: $ 7.75</p>
+            <button class="add-to-cart" onclick="addToCart()">Agregar a Carrito</button>
+        </div>
+        <center><button id="add-product-btn"></button></center>
+        </div>
+    <!--Puedes agregar más productos aquí-->
+    </div>
+    </div>
+    <div id="paypal-container-RDPGH3SD7VRHE" class="d-inline-block"></div>
+    <footer>
+        <p>Logo Certificado de Seguridad | Logos de Formas de Pago | Logos de Redes Sociales</p>
+        <p>Derechos Reservados. Año.</p>
+    </footer>
+
+    <script>
+        let cartCount = 0;
+
+        function addToCart() {
+            cartCount++;
+            document.getElementById("cart-items").innerText = "Productos en el carrito: " + cartCount;
+        }
+    </script>
+    
